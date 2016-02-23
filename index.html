@@ -1,0 +1,69 @@
+<!doctype html>
+<html>
+	<head>
+		<title>Hello AngularJS</title>
+
+		<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.0.4/angular.min.js"></script>
+		
+		<script>
+
+		var myapp = angular.module('myapp', []);
+
+		myapp.config(function ($routeProvider){
+		$routeProvider
+		.when('/',
+		{
+		controller:'ListUsers',
+		templateUrl:'index.html'
+		})
+		.when('/test',
+		{
+		controller:'GetUsers',
+		templateUrl:'test.html'
+		})
+		.otherwise({redirectTo:'/'});
+		});
+
+		myapp.controller("GetUsers",function ($scope){
+		$scope.message="This is a test screen";
+		});
+		
+		myapp.controller("ListUsers",function ($scope, $http) {
+		$http.get('http://localhost:7001/credential-management/customer/30/users').
+        success(function(data) {
+         $scope.userList = data;
+		 var u=data;
+		 var abc=[];
+            for(var i=0; i<u.itemsPerPage; i++) {
+					$http.get(u.Resources[i].meta.location).
+					success(function(result) {
+					abc.push(result);
+					});
+            };
+		$scope.test=abc;
+        });	
+		});
+		
+		</script>
+	</head>
+
+	<body ng-app="myapp">
+
+	<div ng-controller="ListUsers">
+	
+	<p>Total Users For the Company {{userList.totalResults}}</p>
+			<p>Resource Name {{userList.Resources[1].meta.location}}</p>
+			<label>Search: <input ng-model="search.name.familyName"></label>		
+			<table>
+				<tr>
+					<td>First Name</td>
+					<td>Last Name</td>
+				</tr>
+				<tr  ng-repeat =  "t in test | filter:search.name.familyName">
+					<td><a href="#test">{{t.name.familyName}} {{t.name.givenName}}</a> </td>
+					<div ng-view></div>
+				</tr>
+			</table>
+		</div>
+	</body>
+</html>
